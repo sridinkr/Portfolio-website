@@ -1,0 +1,388 @@
+{% extends "base.html" %}
+{% block content %}
+<main class="max-w-6xl mx-auto px-4 mt-8 mb-16 space-y-6">
+
+    <div class="bg-white border border-[#E2E8F0] rounded-3xl p-6 shadow-sm flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div class="space-y-1">
+            <h1 class="text-xl font-bold text-[#0F172A]">Edit Your Portfolio</h1>
+            <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-[#64748B]">
+                <span>Changes update immediately.</span>
+                <span class="flex items-center gap-1.5">
+                    <i class="fa-solid fa-eye text-blue-500"></i>
+                    <strong id="view-count">{{ profile.view_count or 0 }}</strong> views
+                    <button onclick="window.location.reload()" title="Refresh stats" class="ml-1 w-5 h-5 flex items-center justify-center text-slate-400 hover:text-blue-600 hover:rotate-180 transition-all duration-500 rounded-full hover:bg-blue-50">
+                        <i class="fa-solid fa-arrows-rotate text-[10px]"></i>
+                    </button>
+                </span>
+                {% if user.last_login %}
+                <span class="flex items-center gap-1.5"><i class="fa-solid fa-clock text-slate-400"></i> Last login: {{ user.last_login }}</span>
+                {% endif %}
+            </div>
+        </div>
+        <a href="/profile/{{ session['user_id'] }}" target="_blank" class="bg-slate-900 hover:bg-black text-white font-semibold text-xs px-5 py-2.5 rounded-full shadow-sm transition-colors flex items-center gap-2">
+            <i class="fa-solid fa-arrow-up-right-from-square"></i> View Public Profile
+        </a>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
+
+        <div class="lg:col-span-3 space-y-6">
+
+            <!-- SAVE ENTIRE PROFILE: basic info + optional new project/education/certificate, one submit -->
+            <form action="/dashboard/update/all" method="POST" enctype="multipart/form-data" class="space-y-6">
+
+            <div class="bg-white border border-[#E2E8F0] p-6 rounded-2xl space-y-4 shadow-sm">
+                <h3 class="font-bold text-sm text-[#0F172A] border-b pb-2">Basic Info</h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div class="flex items-center gap-5">
+                        <div class="w-20 h-20 rounded-full overflow-hidden bg-slate-100 border border-[#E2E8F0] flex items-center justify-center shrink-0">
+                            {% if profile.photo_path %}
+                            <img src="{{ url_for('static', filename='uploads/photos/' + profile.photo_path) }}" class="w-full h-full object-cover" alt="Profile photo">
+                            {% else %}
+                            <i class="fa-solid fa-user text-2xl text-slate-300"></i>
+                            {% endif %}
+                        </div>
+                        <div class="flex-1">
+                            <label class="block text-xs font-semibold text-[#64748B] mb-1">Profile Photo</label>
+                            <input type="file" name="photo" accept=".png,.jpg,.jpeg,.webp" class="w-full text-xs bg-[#F8FAFC] border border-[#E2E8F0] p-1.5 rounded-xl outline-none">
+                            <p class="text-[10px] text-[#94A3B8] mt-1">PNG, JPG, or WEBP — up to 10 MB.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-5">
+                        <div class="w-20 h-20 rounded-xl overflow-hidden bg-red-50 border border-red-100 flex items-center justify-center shrink-0 text-red-400">
+                            <i class="fa-solid fa-file-pdf text-3xl"></i>
+                        </div>
+                        <div class="flex-1">
+                            <label class="block text-xs font-semibold text-[#64748B] mb-1">Resume (PDF)</label>
+                            <input type="file" name="resume" accept=".pdf" class="w-full text-xs bg-[#F8FAFC] border border-[#E2E8F0] p-1.5 rounded-xl outline-none">
+                            <p class="text-[10px] text-[#94A3B8] mt-1">
+                                {% if profile.resume_path %}
+                                <a href="{{ url_for('static', filename='uploads/' + profile.resume_path) }}" target="_blank" class="text-blue-600 hover:underline">View current resume</a>
+                                {% else %}
+                                PDF only — up to 10 MB.
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-[#64748B] mb-1">Full Name</label>
+                        <input type="text" name="full_name" value="{{ profile.full_name or '' }}" required class="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-2.5 text-sm outline-none focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-[#64748B] mb-1">Headline</label>
+                        <input type="text" name="headline" value="{{ profile.headline or '' }}" placeholder="e.g., AI / Computer Vision Engineer" required class="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-2.5 text-sm outline-none focus:border-blue-500">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-[#64748B] mb-1">Summary</label>
+                    <textarea name="summary" rows="4" required class="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-2.5 text-sm outline-none focus:border-blue-500" placeholder="A few sentences about your background and what you're looking for.">{{ profile.summary or '' }}</textarea>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-[#64748B] mb-1">Location</label>
+                        <input type="text" name="location" value="{{ profile.location or '' }}" placeholder="Bangalore, IN" class="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-2.5 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-[#64748B] mb-1">Email</label>
+                        <input type="email" name="email" value="{{ profile.email or '' }}" class="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-2.5 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-[#64748B] mb-1">Phone</label>
+                        <input type="text" name="phone" value="{{ profile.phone or '' }}" class="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-2.5 text-sm">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-[#64748B] mb-1">Availability</label>
+                        <input type="text" name="notice_period" value="{{ profile.notice_period or '' }}" placeholder="Immediate / 15 days" class="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-2.5 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-[#64748B] mb-1">Languages (comma separated)</label>
+                        <input type="text" name="languages" value="{{ profile.languages or '' }}" placeholder="English, Kannada, Hindi" class="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-2.5 text-sm">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-[#64748B] mb-1">LinkedIn URL</label>
+                        <input type="url" name="linkedin_url" value="{{ profile.linkedin_url or '' }}" placeholder="https://linkedin.com/in/username" class="w-full text-xs bg-[#F8FAFC] border border-[#E2E8F0] p-2 rounded-xl outline-none focus:border-blue-400">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-[#64748B] mb-1 flex items-center gap-1">GitHub URL <i class="fa-solid fa-circle-info text-blue-500" title="Used to generate your GitHub Stats chart"></i></label>
+                        <input type="url" name="github_url" value="{{ profile.github_url or '' }}" placeholder="https://github.com/username" class="w-full text-xs bg-[#F8FAFC] border border-[#E2E8F0] p-2 rounded-xl outline-none focus:border-blue-400">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-[#64748B] mb-1">Skills (comma separated)</label>
+                    <input type="text" name="skills" value="{{ profile.skills or '' }}" placeholder="Python, YOLOv8, Flask" class="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-2.5 text-sm">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-[#64748B] mb-1">Hobbies & Interests</label>
+                    <input type="text" name="hobbies" value="{{ profile.hobbies or '' }}" placeholder="Open source, music, hiking" class="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-2.5 text-sm">
+                </div>
+            </div>
+
+            <!-- ADD NEW PROJECTS (multiple) -->
+            <div class="bg-white border border-[#E2E8F0] p-6 rounded-2xl shadow-sm space-y-3">
+                <div class="flex items-center justify-between border-b pb-2">
+                    <h3 class="font-bold text-sm text-[#0F172A] flex items-center gap-2"><i class="fa-solid fa-code text-blue-600"></i> Add Projects</h3>
+                    <button type="button" onclick="addProjectRow()" class="text-xs font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1"><i class="fa-solid fa-plus"></i> Add Another</button>
+                </div>
+                <div id="project-rows" class="space-y-4">
+                    <div class="space-y-2 p-3 border border-dashed border-[#E2E8F0] rounded-xl relative">
+                        <input type="text" name="new_project_title[]" placeholder="Project title" class="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-2.5 text-sm outline-none">
+                        <textarea name="new_project_description[]" placeholder="What it does and the impact" class="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-2.5 text-sm outline-none" rows="2"></textarea>
+                        <input type="text" name="new_project_tech_stack[]" placeholder="Tech stack (comma separated)" class="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-2.5 text-sm outline-none">
+                        <input type="text" name="new_project_metrics[]" placeholder="Key metric (e.g., 18 FPS / 94% acc.)" class="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-2.5 text-sm outline-none">
+                    </div>
+                </div>
+                <p class="text-[10px] text-[#94A3B8]">Leave the title blank to skip a row.</p>
+            </div>
+
+            <!-- ADD NEW EXPERIENCE (multiple) -->
+            <div class="bg-white border border-[#E2E8F0] p-6 rounded-2xl shadow-sm space-y-3">
+                <div class="flex items-center justify-between border-b pb-2">
+                    <h3 class="font-bold text-sm text-[#0F172A] flex items-center gap-2"><i class="fa-solid fa-briefcase text-blue-600"></i> Add Experience</h3>
+                    <button type="button" onclick="addExperienceRow()" class="text-xs font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1"><i class="fa-solid fa-plus"></i> Add Another</button>
+                </div>
+                <div id="experience-rows" class="space-y-4">
+                    <div class="space-y-2 p-3 border border-dashed border-[#E2E8F0] rounded-xl relative">
+                        <input type="text" name="new_exp_company[]" placeholder="Company name" class="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-2.5 text-sm outline-none">
+                        <input type="text" name="new_exp_role[]" placeholder="Role / Job Title" class="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-2.5 text-sm outline-none">
+                        <input type="text" name="new_exp_timeline[]" placeholder="Timeline (e.g., Jun 2024 - Present)" class="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-2.5 text-sm outline-none">
+                        <textarea name="new_exp_description[]" placeholder="Responsibilities and achievements" class="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-2.5 text-sm outline-none" rows="2"></textarea>
+                    </div>
+                </div>
+                <p class="text-[10px] text-[#94A3B8]">Leave the company name blank to skip a row.</p>
+            </div>
+
+            <!-- ADD NEW CERTIFICATES (multiple) -->
+            <div class="bg-white border border-[#E2E8F0] p-6 rounded-2xl shadow-sm space-y-3">
+                <div class="flex items-center justify-between border-b pb-2">
+                    <h3 class="font-bold text-sm text-[#0F172A] flex items-center gap-2"><i class="fa-solid fa-award text-blue-600"></i> Add Certificates</h3>
+                    <button type="button" onclick="addCertRow()" class="text-xs font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1"><i class="fa-solid fa-plus"></i> Add Another</button>
+                </div>
+                <div id="cert-rows" class="space-y-4">
+                    <div class="space-y-2 p-3 border border-dashed border-[#E2E8F0] rounded-xl relative">
+                        <input type="text" name="new_cert_title[]" placeholder="Certificate title" class="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-2.5 text-sm outline-none">
+                        <input type="text" name="new_cert_authority[]" placeholder="Issuing organization" class="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-2.5 text-sm outline-none">
+                        <input type="file" name="new_cert_file[]" accept=".pdf,.png,.jpg,.jpeg,.webp,.doc,.docx" class="w-full text-xs bg-[#F8FAFC] border border-[#E2E8F0] p-1.5 rounded-xl outline-none">
+                    </div>
+                </div>
+                <p class="text-[10px] text-[#94A3B8]">PDF, PNG, JPG, WEBP, DOC, or DOCX — up to 10 MB. Leave the title blank to skip a row.</p>
+            </div>
+
+            <button type="submit" class="w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-xl shadow-sm transition-colors">
+                <i class="fa-solid fa-floppy-disk mr-2"></i>Save Entire Profile
+            </button>
+
+            </form>
+
+            <script>
+            function removeRow(btn) { btn.closest('.space-y-2').remove(); }
+            function makeRemoveBtn() {
+                return '<button type="button" onclick="removeRow(this)" class="absolute top-2 right-2 text-red-400 hover:text-red-600 text-xs" title="Remove"><i class="fa-solid fa-xmark"></i></button>';
+            }
+            function addProjectRow() {
+                document.getElementById('project-rows').insertAdjacentHTML('beforeend',
+                    '<div class="space-y-2 p-3 border border-dashed border-[#E2E8F0] rounded-xl relative">' + makeRemoveBtn() +
+                    '<input type="text" name="new_project_title[]" placeholder="Project title" class="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-2.5 text-sm outline-none">' +
+                    '<textarea name="new_project_description[]" placeholder="What it does and the impact" class="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-2.5 text-sm outline-none" rows="2"></textarea>' +
+                    '<input type="text" name="new_project_tech_stack[]" placeholder="Tech stack (comma separated)" class="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-2.5 text-sm outline-none">' +
+                    '<input type="text" name="new_project_metrics[]" placeholder="Key metric (e.g., 18 FPS / 94% acc.)" class="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-2.5 text-sm outline-none">' +
+                    '</div>');
+            }
+            function addExperienceRow() {
+                document.getElementById('experience-rows').insertAdjacentHTML('beforeend',
+                    '<div class="space-y-2 p-3 border border-dashed border-[#E2E8F0] rounded-xl relative">' + makeRemoveBtn() +
+                    '<input type="text" name="new_exp_company[]" placeholder="Company name" class="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-2.5 text-sm outline-none">' +
+                    '<input type="text" name="new_exp_role[]" placeholder="Role / Job Title" class="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-2.5 text-sm outline-none">' +
+                    '<input type="text" name="new_exp_timeline[]" placeholder="Timeline (e.g., Jun 2024 - Present)" class="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-2.5 text-sm outline-none">' +
+                    '<textarea name="new_exp_description[]" placeholder="Responsibilities and achievements" class="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-2.5 text-sm outline-none" rows="2"></textarea>' +
+                    '</div>');
+            }
+            function addCertRow() {
+                document.getElementById('cert-rows').insertAdjacentHTML('beforeend',
+                    '<div class="space-y-2 p-3 border border-dashed border-[#E2E8F0] rounded-xl relative">' + makeRemoveBtn() +
+                    '<input type="text" name="new_cert_title[]" placeholder="Certificate title" class="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-2.5 text-sm outline-none">' +
+                    '<input type="text" name="new_cert_authority[]" placeholder="Issuing organization" class="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-2.5 text-sm outline-none">' +
+                    '<input type="file" name="new_cert_file[]" accept=".pdf,.png,.jpg,.jpeg,.webp,.doc,.docx" class="w-full text-xs bg-[#F8FAFC] border border-[#E2E8F0] p-1.5 rounded-xl outline-none">' +
+                    '</div>');
+            }
+            </script>
+
+            <!-- YOUR PROJECTS (existing items — edit/delete individually) -->
+            <div class="bg-white border border-[#E2E8F0] p-6 rounded-2xl shadow-sm space-y-4">
+                <h3 class="font-bold text-sm text-[#0F172A] border-b pb-2 flex items-center gap-2"><i class="fa-solid fa-code text-blue-600"></i> Your Projects</h3>
+
+                {% for proj in projects %}
+                <div class="border border-[#F1F5F9] bg-[#F8FAFC] rounded-xl p-4 text-sm">
+                    <div class="flex justify-between items-start gap-3">
+                        <div>
+                            <h4 class="font-bold text-[#0F172A]">{{ proj.title }}</h4>
+                            <p class="text-xs text-[#475569] mt-1">{{ proj.description }}</p>
+                            <p class="text-[11px] text-[#64748B] mt-1"><span class="font-semibold">Stack:</span> {{ proj.tech_stack }}{% if proj.metrics %} &middot; <span class="font-semibold">{{ proj.metrics }}</span>{% endif %}</p>
+                        </div>
+                        <div class="flex gap-2 shrink-0">
+                            <button type="button" onclick="document.getElementById('edit-project-{{ proj.id }}').classList.toggle('hidden')" class="text-xs font-semibold text-blue-600 hover:underline">Edit</button>
+                            <form action="/dashboard/delete/project/{{ proj.id }}" method="POST" onsubmit="return confirm('Delete this project?');">
+                                <button type="submit" class="text-xs font-semibold text-red-500 hover:underline">Delete</button>
+                            </form>
+                        </div>
+                    </div>
+                    <form id="edit-project-{{ proj.id }}" action="/dashboard/edit/project/{{ proj.id }}" method="POST" class="hidden mt-3 pt-3 border-t border-[#E2E8F0] space-y-2">
+                        <input type="text" name="title" value="{{ proj.title }}" required class="w-full bg-white border border-[#E2E8F0] rounded-lg p-2 text-xs outline-none">
+                        <textarea name="description" required rows="2" class="w-full bg-white border border-[#E2E8F0] rounded-lg p-2 text-xs outline-none">{{ proj.description }}</textarea>
+                        <input type="text" name="tech_stack" value="{{ proj.tech_stack }}" required class="w-full bg-white border border-[#E2E8F0] rounded-lg p-2 text-xs outline-none">
+                        <input type="text" name="metrics" value="{{ proj.metrics or '' }}" class="w-full bg-white border border-[#E2E8F0] rounded-lg p-2 text-xs outline-none">
+                        <button type="submit" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg">Save</button>
+                    </form>
+                </div>
+                {% else %}
+                <p class="text-xs text-slate-400 italic">No projects yet — add one above.</p>
+                {% endfor %}
+
+            </div>
+
+            <!-- YOUR EXPERIENCE (existing items — edit/delete individually) -->
+            <div class="bg-white border border-[#E2E8F0] p-6 rounded-2xl shadow-sm space-y-4">
+                <h3 class="font-bold text-sm text-[#0F172A] border-b pb-2 flex items-center gap-2"><i class="fa-solid fa-briefcase text-blue-600"></i> Your Experience</h3>
+
+                {% for exp in experience %}
+                <div class="border border-[#F1F5F9] bg-[#F8FAFC] rounded-xl p-4 text-sm">
+                    <div class="flex justify-between items-start gap-3">
+                        <div>
+                            <h4 class="font-bold text-[#0F172A]">{{ exp.company }} <span class="font-normal text-[#64748B]">— {{ exp.timeline }}</span></h4>
+                            <p class="text-xs font-medium text-[#475569] mt-0.5">{{ exp.role }}</p>
+                            <p class="text-xs text-[#64748B] mt-1">{{ exp.description }}</p>
+                        </div>
+                        <div class="flex gap-2 shrink-0">
+                            <button type="button" onclick="document.getElementById('edit-exp-{{ exp.id }}').classList.toggle('hidden')" class="text-xs font-semibold text-blue-600 hover:underline">Edit</button>
+                            <form action="/dashboard/delete/experience/{{ exp.id }}" method="POST" onsubmit="return confirm('Delete this experience entry?');">
+                                <button type="submit" class="text-xs font-semibold text-red-500 hover:underline">Delete</button>
+                            </form>
+                        </div>
+                    </div>
+                    <form id="edit-exp-{{ exp.id }}" action="/dashboard/edit/experience/{{ exp.id }}" method="POST" class="hidden mt-3 pt-3 border-t border-[#E2E8F0] space-y-2">
+                        <input type="text" name="company" value="{{ exp.company }}" required class="w-full bg-white border border-[#E2E8F0] rounded-lg p-2 text-xs outline-none">
+                        <input type="text" name="role" value="{{ exp.role }}" required class="w-full bg-white border border-[#E2E8F0] rounded-lg p-2 text-xs outline-none">
+                        <input type="text" name="timeline" value="{{ exp.timeline }}" required class="w-full bg-white border border-[#E2E8F0] rounded-lg p-2 text-xs outline-none">
+                        <textarea name="description" required rows="2" class="w-full bg-white border border-[#E2E8F0] rounded-lg p-2 text-xs outline-none">{{ exp.description }}</textarea>
+                        <button type="submit" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg">Save</button>
+                    </form>
+                </div>
+                {% else %}
+                <p class="text-xs text-slate-400 italic">No experience added yet — add one above.</p>
+                {% endfor %}
+
+            </div>
+
+            <!-- YOUR CERTIFICATES (existing items — edit/delete individually) -->
+            <div class="bg-white border border-[#E2E8F0] p-6 rounded-2xl shadow-sm space-y-4">
+                <h3 class="font-bold text-sm text-[#0F172A] border-b pb-2 flex items-center gap-2"><i class="fa-solid fa-award text-blue-600"></i> Your Certificates</h3>
+
+                {% for cert in certifications %}
+                <div class="border border-[#F1F5F9] bg-[#F8FAFC] rounded-xl p-4 text-sm">
+                    <div class="flex justify-between items-start gap-3">
+                        <div>
+                            <h4 class="font-bold text-[#0F172A]">{{ cert.title }}</h4>
+                            <p class="text-xs text-[#475569] mt-1">{{ cert.authority }}</p>
+                            {% if cert.file_path %}
+                            <a href="{{ url_for('static', filename='uploads/' + cert.file_path) }}" target="_blank" class="text-[11px] text-blue-600 hover:underline">View file</a>
+                            {% endif %}
+                        </div>
+                        <div class="flex gap-2 shrink-0">
+                            <form action="/dashboard/delete/certification/{{ cert.id }}" method="POST" onsubmit="return confirm('Delete this certificate?');">
+                                <button type="submit" class="text-xs font-semibold text-red-500 hover:underline">Delete</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <p class="text-xs text-slate-400 italic">No certificates added yet.</p>
+                {% endfor %}
+
+            </div>
+
+            </div>
+
+        </div>
+
+        <div class="space-y-6">
+            <div class="bg-white border border-[#E2E8F0] p-6 rounded-2xl shadow-sm space-y-4">
+                <h4 class="text-sm font-bold text-[#0F172A] border-b pb-2 flex items-center gap-2">
+                    <i class="fa-solid fa-user-gear text-blue-600"></i> Account Settings
+                </h4>
+                <form action="/dashboard/update/account" method="POST" class="space-y-3">
+                    <div>
+                        <label class="block text-[10px] font-bold text-[#64748B] uppercase tracking-wider mb-1">Username</label>
+                        <input type="text" name="username" value="{{ user.username }}" required class="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-2 text-xs outline-none focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-[#64748B] uppercase tracking-wider mb-1">Recovery Email</label>
+                        <input type="email" name="email" value="{{ user.email or '' }}" placeholder="For recovery" required class="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-2 text-xs outline-none focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-[#64748B] uppercase tracking-wider mb-1">Security Question</label>
+                        <select name="security_question" required class="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-2 text-xs outline-none focus:border-blue-500">
+                            <option value="What is your pet's name?" {% if user.security_question == "What is your pet's name?" %}selected{% endif %}>What is your pet's name?</option>
+                            <option value="What city were you born in?" {% if user.security_question == "What city were you born in?" %}selected{% endif %}>What city were you born in?</option>
+                            <option value="What is your mother's maiden name?" {% if user.security_question == "What is your mother's maiden name?" %}selected{% endif %}>What is your mother's maiden name?</option>
+                            <option value="What was the name of your first school?" {% if user.security_question == "What was the name of your first school?" %}selected{% endif %}>What was the name of your first school?</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-[#64748B] uppercase tracking-wider mb-1">Security Answer</label>
+                        <input type="text" name="security_answer" value="{{ user.security_answer or '' }}" placeholder="New answer" required class="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-2 text-xs outline-none focus:border-blue-500">
+                    </div>
+                    <div class="border-t border-[#F1F5F9] pt-2">
+                        <label class="block text-[10px] font-bold text-[#64748B] uppercase tracking-wider mb-1">New Password (optional)</label>
+                        <input type="password" name="new_password" placeholder="Leave blank to keep same" class="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-2 text-xs outline-none focus:border-blue-500">
+                    </div>
+                    <div class="bg-amber-50 border border-amber-100 rounded-xl p-2.5 space-y-1">
+                        <label class="block text-[10px] font-bold text-amber-800 uppercase tracking-wider">Confirm Identity</label>
+                        <input type="password" name="current_password" placeholder="Enter current password" required class="w-full bg-white border border-amber-200 rounded-lg p-1.5 text-xs outline-none focus:border-amber-500">
+                    </div>
+                    <button type="submit" class="w-full py-2 bg-slate-900 hover:bg-black text-white text-xs font-semibold rounded-xl shadow-sm transition-colors">Update Credentials</button>
+                </form>
+            </div>
+
+            <div class="bg-slate-900 text-white rounded-2xl p-6 shadow-sm space-y-3">
+                <h4 class="text-sm font-bold flex items-center gap-2"><i class="fa-solid fa-circle-info text-blue-400"></i> Tips</h4>
+                <ul class="text-xs text-slate-300 space-y-2 leading-relaxed list-disc list-inside">
+                    <li>Add a real photo — profiles with one get noticed more often.</li>
+                    <li>Lead each project with the outcome or metric, not just the tech.</li>
+                    <li>Keep your summary to 2–3 sentences.</li>
+                </ul>
+            </div>
+
+            <!-- Danger Zone -->
+            <div class="bg-red-50 border border-red-200 rounded-2xl p-5 space-y-3">
+                <h4 class="text-sm font-bold text-red-700 flex items-center gap-2">
+                    <i class="fa-solid fa-triangle-exclamation"></i> Danger Zone
+                </h4>
+                <p class="text-[11px] text-red-600 leading-relaxed">Deleting your account is <strong>permanent</strong>. All your profile data, projects, experience, certificates, and uploaded files will be erased forever.</p>
+                <button onclick="document.getElementById('delete-account-form').classList.toggle('hidden')" type="button" class="w-full py-2 border border-red-300 text-red-700 text-xs font-semibold rounded-xl hover:bg-red-100 transition-colors">
+                    <i class="fa-solid fa-trash mr-1"></i> Delete My Account
+                </button>
+                <form id="delete-account-form" action="/dashboard/delete-account" method="POST" class="hidden space-y-2 pt-1" onsubmit="return confirm('This will permanently delete your account. Are you absolutely sure?')">
+                    <input type="password" name="confirm_delete_password" required placeholder="Confirm with your password" class="w-full bg-white border border-red-200 rounded-xl p-2 text-xs outline-none focus:border-red-500">
+                    <button type="submit" class="w-full py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-xl transition-colors">
+                        Yes, permanently delete everything
+                    </button>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</main>
+{% endblock %}

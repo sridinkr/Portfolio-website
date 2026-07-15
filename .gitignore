@@ -1,0 +1,5 @@
+__pycache__/
+*.pyc
+.secret_key
+static/uploads/photos/user*
+static/uploads/resume_*

@@ -1,0 +1,267 @@
+{% extends "base.html" %}
+{% block title %}{{ profile.full_name or 'Portfolio' }}{% endblock %}
+{% block meta_description %}{{ (profile.headline or profile.summary or 'Professional portfolio')[:150] }}{% endblock %}
+{% block content %}
+
+    <div class="max-w-6xl mx-auto px-4 mt-8 mb-16 space-y-6">
+
+        <div class="bg-white border border-[#E2E8F0] rounded-3xl p-8 shadow-sm flex flex-col lg:flex-row gap-8 justify-between items-start">
+
+            <div class="flex flex-col sm:flex-row items-center sm:items-start gap-8 w-full">
+                <div class="w-28 h-28 rounded-full border-4 border-white shadow-md bg-[#E2E8F0] overflow-hidden flex items-center justify-center shrink-0">
+                    {% if profile.photo_path %}
+                    <img src="{{ url_for('static', filename='uploads/photos/' + profile.photo_path) }}" class="w-full h-full object-cover" alt="{{ profile.full_name }}">
+                    {% else %}
+                    <span class="font-bold text-3xl text-slate-500">{{ profile.full_name[:2].upper() if profile.full_name else 'SK' }}</span>
+                    {% endif %}
+                </div>
+
+                <div class="space-y-3 w-full text-center sm:text-left">
+                    <div class="space-y-1">
+                        <div class="flex items-center justify-center sm:justify-start gap-2">
+                            <h1 class="text-2xl font-bold text-[#0F172A]">{{ profile.full_name or 'Add your name' }}</h1>
+                            {% if is_owner %}
+                            <a href="/dashboard"><i class="fa-solid fa-pen text-slate-400 text-xs hover:text-blue-600"></i></a>
+                            {% endif %}
+                        </div>
+                        <p class="text-sm font-semibold text-[#1E293B]">{{ profile.headline or 'Add a headline' }}</p>
+                        <p class="text-xs text-[#64748B]">{{ profile.location or '' }}</p>
+                    </div>
+
+                    <div class="border-t border-[#F1F5F9] my-2"></div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2 text-xs text-[#475569]">
+                        {% if profile.location %}
+                        <div class="flex items-center gap-2 justify-center sm:justify-start">
+                            <i class="fa-solid fa-location-dot text-[#94A3B8] w-4"></i>
+                            <span>{{ profile.location }}</span>
+                        </div>
+                        {% endif %}
+                        {% if profile.phone %}
+                        <div class="flex items-center gap-2 justify-center sm:justify-start">
+                            <i class="fa-solid fa-phone text-[#94A3B8] w-4"></i>
+                            <span class="font-medium text-[#1E293B]">{{ profile.phone }}</span>
+                        </div>
+                        {% endif %}
+                        {% if profile.email %}
+                        <div class="flex items-center gap-2 justify-center sm:justify-start">
+                            <i class="fa-solid fa-envelope text-[#94A3B8] w-4"></i>
+                            <span class="font-medium text-[#1E293B]">{{ profile.email }}</span>
+                        </div>
+                        {% endif %}
+                        {% if profile.linkedin_url %}
+                        <div class="flex items-center gap-2 justify-center sm:justify-start">
+                            <i class="fa-brands fa-linkedin text-[#94A3B8] w-4"></i>
+                            <a href="{{ profile.linkedin_url }}" target="_blank" class="font-medium text-blue-600 hover:underline">LinkedIn</a>
+                        </div>
+                        {% endif %}
+                        {% if profile.github_url %}
+                        <div class="flex items-center gap-2 justify-center sm:justify-start">
+                            <i class="fa-brands fa-github text-[#94A3B8] w-4"></i>
+                            <a href="{{ profile.github_url }}" target="_blank" class="font-medium text-blue-600 hover:underline">GitHub</a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="w-full lg:w-[300px] bg-slate-50 border border-[#E2E8F0] rounded-2xl p-5 space-y-4 shrink-0">
+                <span class="text-[11px] font-bold text-[#64748B] uppercase tracking-wide block">At a glance</span>
+                <div class="text-xs space-y-2 text-[#475569]">
+                    <div class="flex justify-between">
+                        <span>Availability:</span>
+                        <span class="font-bold text-[#0F172A]">{{ profile.notice_period or '—' }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Languages:</span>
+                        <span class="font-bold text-[#0F172A]">{{ profile.languages or '—' }}</span>
+                    </div>
+                </div>
+                {% if profile.resume_path %}
+                <div class="space-y-2">
+                    <a href="{{ url_for('static', filename='uploads/' + profile.resume_path) }}" target="_blank" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-full text-center block transition-colors shadow-sm flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-download"></i> Download Resume
+                    </a>
+                    {% if is_owner %}
+                    <button onclick="document.getElementById('resume-edit-profile').classList.toggle('hidden')" class="w-full py-2 border border-emerald-300 text-emerald-700 text-xs font-semibold rounded-full hover:bg-emerald-50 transition-colors">
+                        <i class="fa-solid fa-pen mr-1"></i> Replace Resume
+                    </button>
+                    <form id="resume-edit-profile" action="/profile/replace-resume" method="POST" enctype="multipart/form-data" class="hidden space-y-1.5 pt-1">
+                        <input type="file" name="resume" accept=".pdf" required class="w-full text-xs bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-1.5 outline-none">
+                        <button type="submit" class="w-full py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl">Upload New Resume</button>
+                    </form>
+                    {% endif %}
+                </div>
+                {% endif %}
+                {% if profile.email %}
+                <a href="mailto:{{ profile.email }}" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-full text-center block transition-colors shadow-sm">
+                    Get in Touch
+                </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
+
+            <aside class="bg-white border border-[#E2E8F0] rounded-2xl p-3 shadow-sm sticky top-20 text-xs font-medium text-[#475569] space-y-0.5">
+                <div class="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider p-2 mb-1">Quick links</div>
+                <a href="#summary" class="block p-2.5 rounded-lg hover:bg-slate-50 hover:text-blue-600">Summary</a>
+                <a href="#projects" class="block p-2.5 rounded-lg hover:bg-slate-50 hover:text-blue-600">Projects</a>
+                <a href="#experience" class="block p-2.5 rounded-lg hover:bg-slate-50 hover:text-blue-600">Experience</a>
+                <a href="#skills" class="block p-2.5 rounded-lg hover:bg-slate-50 hover:text-blue-600">Skills</a>
+                <a href="#certifications" class="block p-2.5 rounded-lg hover:bg-slate-50 hover:text-blue-600">Certificates</a>
+            </aside>
+
+            <div class="lg:col-span-3 space-y-6">
+
+                <section id="summary" class="bg-white border border-[#E2E8F0] p-6 rounded-2xl shadow-sm space-y-3 scroll-mt-24">
+                    <h3 class="font-bold text-sm text-[#0F172A] border-b pb-2">Summary</h3>
+                    <p class="text-xs text-[#475569] leading-relaxed whitespace-pre-line">{{ profile.summary or 'Add a summary from your dashboard.' }}</p>
+                </section>
+
+                <section id="projects" class="bg-white border border-[#E2E8F0] p-6 rounded-2xl shadow-sm space-y-4 scroll-mt-24">
+                    <h3 class="font-bold text-sm text-[#0F172A] border-b pb-2">Projects</h3>
+                    <div class="space-y-6">
+                        {% for proj in projects %}
+                        <div class="group relative bg-white border border-[#E2E8F0] rounded-3xl p-6 hover:shadow-2xl hover:shadow-blue-500/10 hover:border-blue-300 transition-all duration-300">
+                            <h4 class="font-bold text-lg text-[#0F172A] group-hover:text-blue-600 transition-colors">{{ proj.title }}</h4>
+                            {% if proj.metrics %}
+                            <div class="mt-2">
+                                <span class="inline-flex items-center gap-1.5 bg-gradient-to-r from-emerald-50 to-teal-50 text-emerald-700 border border-emerald-100 text-[11px] font-semibold px-2 py-0.5 rounded-lg shadow-sm">
+                                    <i class="fa-solid fa-bolt text-emerald-500"></i> {{ proj.metrics }}
+                                </span>
+                            </div>
+                            {% endif %}
+                            <p class="text-sm text-[#475569] mt-3 leading-relaxed">{{ proj.description }}</p>
+                            <div class="mt-4 pt-4 border-t border-slate-100 flex flex-wrap gap-2">
+                                {% if proj.tech_stack %}
+                                    {% for tech in proj.tech_stack.split(',') %}
+                                    <span class="bg-slate-50 border border-slate-200 text-slate-600 text-[11px] font-semibold px-2 py-1 rounded-md">{{ tech.strip() }}</span>
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% else %}
+                        <p class="text-xs text-slate-400 italic">No projects added yet.</p>
+                        {% endfor %}
+                    </div>
+                </section>
+
+                <section id="experience" class="bg-white border border-[#E2E8F0] p-6 rounded-2xl shadow-sm space-y-4 scroll-mt-24">
+                    <h3 class="font-bold text-sm text-[#0F172A] border-b pb-2">Experience</h3>
+                    <div class="space-y-4">
+                        {% for exp in experience %}
+                        <div class="relative pl-6 before:absolute before:left-0 before:top-2 before:bottom-[-16px] before:w-[2px] before:bg-[#E2E8F0] last:before:hidden">
+                            <div class="absolute left-[-5px] top-1.5 w-3 h-3 rounded-full bg-blue-500 border-[3px] border-white shadow-sm"></div>
+                            <div class="bg-[#F8FAFC] border border-[#F1F5F9] rounded-xl p-4 text-xs space-y-2">
+                                <div class="flex justify-between items-start gap-2">
+                                    <div>
+                                        <h4 class="font-bold text-[#0F172A] text-sm">{{ exp.role }}</h4>
+                                        <p class="font-semibold text-blue-600 mt-0.5">{{ exp.company }}</p>
+                                    </div>
+                                    <span class="bg-slate-100 text-[#64748B] font-mono font-medium px-2 py-0.5 rounded whitespace-nowrap">{{ exp.timeline }}</span>
+                                </div>
+                                <p class="text-[#475569] leading-relaxed whitespace-pre-line">{{ exp.description }}</p>
+                            </div>
+                        </div>
+                        {% else %}
+                        <p class="text-xs text-slate-400 italic">No experience added yet.</p>
+                        {% endfor %}
+                    </div>
+                </section>
+
+                <section id="skills" class="bg-white border border-[#E2E8F0] p-6 rounded-2xl shadow-sm space-y-3 scroll-mt-24">
+                    <h3 class="font-bold text-sm text-[#0F172A] border-b pb-2">Skills</h3>
+                    <div class="flex flex-wrap gap-2 pt-1">
+                        {% if profile.skills %}
+                            {% for skill in profile.skills.split(',') %}
+                            <span class="bg-white border border-[#CBD5E1] px-3 py-1.5 rounded-full text-xs text-[#334155] hover:bg-slate-50 transition-colors">
+                                {{ skill.strip() }}
+                            </span>
+                            {% endfor %}
+                        {% else %}
+                            <p class="text-xs text-slate-400 italic">Add skills from your dashboard.</p>
+                        {% endif %}
+                    </div>
+                </section>
+
+                {% if profile.github_url %}
+                {% set github_username = profile.github_url.rstrip('/').split('/')[-1] %}
+                <section id="github" class="bg-white border border-[#E2E8F0] p-6 rounded-2xl shadow-sm space-y-4 scroll-mt-24">
+                    <h3 class="font-bold text-sm text-[#0F172A] border-b pb-2">GitHub Activity</h3>
+                    <div class="space-y-4">
+                        <div class="overflow-x-auto">
+                            <img src="https://ghchart.rshah.org/2563EB/{{ github_username }}" alt="{{ github_username }}'s Github Chart" class="min-w-[500px] w-full opacity-90 hover:opacity-100 transition-opacity" />
+                        </div>
+                        <div class="flex justify-center border-t border-slate-100 pt-4">
+                            <img src="https://github-readme-stats.vercel.app/api/top-langs/?username={{ github_username }}&layout=compact&theme=transparent&hide_border=true&title_color=0f172a&text_color=475569" alt="Top Languages" class="max-w-full" />
+                        </div>
+                    </div>
+                </section>
+                {% endif %}
+
+                {% if certifications %}
+                <section id="certifications" class="bg-white border border-[#E2E8F0] p-6 rounded-2xl shadow-sm space-y-4 scroll-mt-24">
+                    <h3 class="font-bold text-sm text-[#0F172A] border-b pb-2">Certificates</h3>
+                    <div class="divide-y divide-[#F1F5F9]">
+                        {% for cert in certifications %}
+                        <div class="flex items-start gap-4 py-4 first:pt-0 last:pb-0 text-xs">
+                            <div class="w-10 h-10 border bg-slate-50 border-slate-200 rounded-lg flex items-center justify-center text-amber-500 text-base shrink-0">
+                                <i class="fa-solid fa-award"></i>
+                            </div>
+                            <div class="space-y-0.5 flex-1">
+                                <h4 class="font-semibold text-[#0F172A]">{{ cert.title }}</h4>
+                                <p class="text-[#64748B] text-[11px]">{{ cert.authority }}</p>
+                                <div class="pt-1.5 flex items-center gap-2 flex-wrap">
+                                    {% if cert.file_path %}
+                                    <a href="{{ url_for('static', filename='uploads/' + cert.file_path) }}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-700 text-[11px] font-bold rounded-lg transition-colors">
+                                        <i class="fa-solid fa-arrow-up-right-from-square"></i> View Credential
+                                    </a>
+                                    {% endif %}
+                                    {% if is_owner %}
+                                    <button onclick="document.getElementById('cert-edit-p-{{ cert.id }}').classList.toggle('hidden')" title="Replace file" class="w-6 h-6 flex items-center justify-center bg-slate-50 border border-slate-200 rounded-full text-slate-400 hover:text-amber-600 hover:border-amber-300 transition-colors text-[10px]">
+                                        <i class="fa-solid fa-pen"></i>
+                                    </button>
+                                    {% endif %}
+                                </div>
+                                {% if is_owner %}
+                                <form id="cert-edit-p-{{ cert.id }}" action="/profile/replace-cert/{{ cert.id }}" method="POST" enctype="multipart/form-data" class="hidden mt-1 flex items-center gap-2">
+                                    <input type="file" name="cert_file" required class="text-xs bg-white border border-slate-200 rounded-lg p-1.5 outline-none">
+                                    <button type="submit" class="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-[11px] font-semibold rounded-lg">Upload</button>
+                                </form>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </section>
+                {% endif %}
+
+            </div>
+
+        </div>
+
+        <!-- Let's Connect Footer -->
+        <div class="mt-8 bg-gradient-to-br from-slate-900 to-[#0F172A] rounded-3xl p-8 shadow-xl text-center relative overflow-hidden mb-8">
+            <div class="absolute -top-24 -right-24 w-64 h-64 bg-blue-500 rounded-full mix-blend-screen filter blur-[80px] opacity-20"></div>
+            <div class="absolute -bottom-24 -left-24 w-64 h-64 bg-emerald-500 rounded-full mix-blend-screen filter blur-[80px] opacity-20"></div>
+            
+            <h2 class="text-2xl font-extrabold text-white mb-2 relative z-10">Let's build something together.</h2>
+            <p class="text-slate-400 text-sm max-w-lg mx-auto mb-6 relative z-10">I'm currently open for new opportunities. Whether you have a question or just want to say hi, I'll try my best to get back to you!</p>
+            
+            <div class="flex flex-wrap items-center justify-center gap-4 relative z-10">
+                {% if profile.email %}
+                <a href="mailto:{{ profile.email }}" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-full transition-all hover:scale-105 shadow-lg shadow-blue-500/25">
+                    <i class="fa-solid fa-paper-plane mr-2"></i> Say Hello
+                </a>
+                {% endif %}
+                {% if profile.resume_path %}
+                <a href="{{ url_for('static', filename='uploads/' + profile.resume_path) }}" target="_blank" class="px-5 py-2.5 bg-white hover:bg-slate-50 text-slate-900 font-bold text-xs rounded-full transition-all hover:scale-105 shadow-lg">
+                    <i class="fa-solid fa-file-pdf text-red-500 mr-2"></i> View Resume
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

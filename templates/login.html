@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="min-h-[75vh] flex items-center justify-center px-4 bg-[#F4F5F7]">
+    <div class="max-w-3xl w-full grid grid-cols-1 md:grid-cols-2 gap-8 bg-white border border-[#E2E8F0] p-8 rounded-3xl shadow-sm">
+
+        <div class="space-y-4">
+            <h2 class="text-xl font-bold text-[#0F172A]">Log in</h2>
+            <form action="/login" method="POST" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-[#64748B] mb-1">Username</label>
+                    <input type="text" name="username" required class="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-2.5 text-sm outline-none focus:border-blue-500 transition-colors">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-[#64748B] mb-1">Password</label>
+                    <input type="password" name="password" required class="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-2.5 text-sm outline-none focus:border-blue-500 transition-colors">
+                </div>
+                <div class="flex justify-between items-center text-xs">
+                    <a href="/forgot-username" class="text-blue-600 hover:underline">Forgot username?</a>
+                    <a href="/forgot-password" class="text-blue-600 hover:underline">Forgot password?</a>
+                </div>
+                <button type="submit" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl transition-colors shadow-sm">Log In</button>
+            </form>
+        </div>
+
+        <div class="space-y-4 border-t md:border-t-0 md:border-l border-[#E2E8F0] pt-6 md:pt-0 md:pl-8">
+            <h2 class="text-xl font-bold text-[#0F172A]">Create account</h2>
+            <form action="/register" method="POST" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-[#64748B] mb-1">Username</label>
+                    <input type="text" name="username" required class="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-2.5 text-sm outline-none focus:border-emerald-500 transition-colors">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-[#64748B] mb-1">Password</label>
+                    <input type="password" name="password" required class="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-2.5 text-sm outline-none focus:border-emerald-500 transition-colors">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-[#64748B] mb-1">Recovery Email</label>
+                    <input type="email" name="email" required placeholder="For recovering username" class="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-2.5 text-sm outline-none focus:border-emerald-500 transition-colors">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-[#64748B] mb-1">Security Question</label>
+                    <select name="security_question" required class="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-2.5 text-sm outline-none focus:border-emerald-500 transition-colors">
+                        <option value="What is your pet's name?">What is your pet's name?</option>
+                        <option value="What city were you born in?">What city were you born in?</option>
+                        <option value="What is your mother's maiden name?">What is your mother's maiden name?</option>
+                        <option value="What was the name of your first school?">What was the name of your first school?</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-[#64748B] mb-1">Security Answer</label>
+                    <input type="text" name="security_answer" required placeholder="Answer is case-insensitive" class="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-2.5 text-sm outline-none focus:border-emerald-500 transition-colors">
+                </div>
+                <button type="submit" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-xl transition-colors shadow-sm">Create Account</button>
+            </form>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

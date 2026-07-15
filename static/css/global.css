@@ -1,0 +1,7 @@
+html { font-family: 'Inter', sans-serif; }
+.font-mono { font-family: 'JetBrains Mono', monospace; }
+/* Webkit Custom Scrollbar Configs */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: #FFFFFF; }
+::-webkit-scrollbar-thumb { background: #E2E8F0; border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: #10B981; }
